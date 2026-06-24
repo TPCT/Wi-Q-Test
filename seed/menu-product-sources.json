@@ -1,0 +1,8 @@
+{
+  "data": [
+    {
+      "menu_name": "Takeaway",
+      "products_response_file": "menu-products.json"
+    }
+  ]
+}
