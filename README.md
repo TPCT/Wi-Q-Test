@@ -103,6 +103,7 @@ This submission is implemented in Python with FastAPI. I used AI development too
 - SQLite persistence through SQLAlchemy.
 - Startup seeding from the provided response-shaped JSON files.
 - A real client-credentials auth flow backed by a seeded `clients` table.
+- Client permissions stored as JSON scope arrays.
 - One-hour signed JWT bearer tokens containing `client_id`, `scope`, and `grant_type`.
 - Modular feature boundaries for auth, menus, and products.
 - Tests for routes, services, repositories, database seeding, JWT claims, and product updates.
@@ -132,13 +133,14 @@ The `responses/` files are kept in the same response shape as the task brief:
 - `responses/menus.json`
 - `responses/menu-products.json`
 
-`seed/clients.json` is separate because it is application auth seed data, not a Great Food response file from the brief. `seed/menu-product-sources.json` links response files to their parent menu, so products are seeded under a real menu relationship rather than assigned to a menu in code.
+`seed/clients.json` is separate because it is application auth seed data, not a Great Food response file from the brief. It stores client identity, secret, and scope permissions only; `grant_type` comes from the token request and is copied into the JWT claim after validation. `seed/menu-product-sources.json` links response files to their parent menu, so products are seeded under a real menu relationship rather than assigned to a menu in code.
 
 ### Design notes
 
-- `POST /auth_token` validates `client_id`, `client_secret`, and `grant_type` against the `clients` table.
+- `POST /auth_token` validates `client_id` and `client_secret` against the `clients` table, then validates the submitted `grant_type` as the supported client-credentials flow.
 - Valid `client_credentials` requests receive a signed JWT that expires in 3600 seconds.
 - Protected endpoints decode and validate the JWT, including the `grant_type=client_credentials` claim.
+- JWT claims include scope as an array, while the token response keeps the task fixture shape with `scope` as a string.
 - Products are related to their parent menu through a SQLAlchemy relationship and a `products.menu_id` foreign key.
 - The product seeder reads `seed/menu-product-sources.json` to attach `responses/menu-products.json` to the `Takeaway` menu.
 - Product services delegate product mutation to the repository; the repository owns product persistence/model construction.
@@ -176,7 +178,7 @@ Content-Type: application/x-www-form-urlencoded
 client_secret=4j3g4gj304gj3&client_id=1337&grant_type=client_credentials
 ```
 
-Validates the submitted client against the seeded `clients` table, then returns a signed JWT bearer token that expires in one hour. The token response follows the field shape of `responses/token.json`, with a generated JWT replacing the sample token value.
+Validates the submitted client against the seeded `clients` table and checks that the submitted grant type is `client_credentials`, then returns a signed JWT bearer token that expires in one hour. Client scopes are stored as a JSON array and emitted as an array in JWT claims. The token response follows the field shape of `responses/token.json`, with a generated JWT replacing the sample token value.
 
 ```json
 {
@@ -266,7 +268,7 @@ The test suite is intentionally split by layer:
 | Test file | Coverage |
 | --- | --- |
 | `tests/test_api_routes.py` | Route contracts, auth-token form flow, JWT-protected endpoints, response shapes matching `responses/*.json`, and product update error handling. |
-| `tests/modules/auth/test_service.py` | Client-credentials validation, JWT generation, one-hour expiry, and required JWT claims including `grant_type=client_credentials`. |
+| `tests/modules/auth/test_service.py` | Client-credentials validation, unsupported grant rejection, JWT generation, one-hour expiry, and required JWT claims including `grant_type=client_credentials` and array scopes. |
 | `tests/modules/menus/test_repository.py` | SQLAlchemy menu repository reads seeded menu data from `responses/menus.json`. |
 | `tests/modules/menus/test_service.py` | Menu service lookup behavior and missing-menu errors. |
 | `tests/modules/products/test_repository.py` | SQLAlchemy product repository reads seeded products, verifies products are attached to the `Takeaway` menu relationship, and persists update/upsert operations. |

@@ -3,8 +3,7 @@
     {
       "client_id": "1337",
       "client_secret": "4j3g4gj304gj3",
-      "grant_type": "client_credentials",
-      "scope": "catalogue"
+      "scope": ["catalogue"]
     }
   ]
 }

@@ -57,7 +57,7 @@ async def test_creates_one_hour_jwt_for_valid_client_credentials() -> None:
     assert claims["client_id"] == "1337"
     assert claims["sub"] == "1337"
     assert claims["grant_type"] == "client_credentials"
-    assert claims["scope"] == "catalogue"
+    assert claims["scope"] == ["catalogue"]
     assert claims["exp"] - claims["iat"] == 3600
 
 
@@ -72,4 +72,18 @@ async def test_rejects_invalid_client_secret() -> None:
             client_id="1337",
             client_secret="wrong",
             grant_type="client_credentials",
+        )
+
+
+async def test_rejects_unsupported_grant_type() -> None:
+    service = AuthService(
+        client_repository=SqlAlchemyClientRepository(session=create_seeded_session()),
+        settings=create_settings(),
+    )
+
+    with pytest.raises(InvalidClientCredentialsError):
+        await service.create_access_token(
+            client_id="1337",
+            client_secret="4j3g4gj304gj3",
+            grant_type="password",
         )

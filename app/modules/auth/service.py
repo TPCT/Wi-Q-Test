@@ -6,6 +6,8 @@ from app.core.config import Settings
 from app.modules.auth.models import AccessToken
 from app.modules.auth.repository import ClientRepository
 
+CLIENT_CREDENTIALS_GRANT_TYPE = "client_credentials"
+
 
 class InvalidClientCredentialsError(ValueError):
     def __init__(self) -> None:
@@ -27,7 +29,7 @@ class AuthService:
         if (
             client is None
             or client.client_secret != client_secret
-            or client.grant_type != grant_type
+            or grant_type != CLIENT_CREDENTIALS_GRANT_TYPE
         ):
             raise InvalidClientCredentialsError()
 
@@ -37,7 +39,7 @@ class AuthService:
             {
                 "sub": client.client_id,
                 "client_id": client.client_id,
-                "grant_type": client.grant_type,
+                "grant_type": grant_type,
                 "scope": client.scope,
                 "iat": int(now.timestamp()),
                 "exp": int(expires_at.timestamp()),
@@ -50,5 +52,5 @@ class AuthService:
             access_token=token,
             expires_in=self._settings.access_token_expires_seconds,
             token_type="Bearer",
-            scope=client.scope,
+            scope=" ".join(client.scope),
         )

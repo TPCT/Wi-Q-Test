@@ -64,13 +64,18 @@ def _upsert_menus(session: Session, menu_payloads: list[dict[str, object]]) -> N
 
 def _upsert_clients(session: Session, client_payloads: list[dict[str, object]]) -> None:
     for client_payload in client_payloads:
+        scope_payload = client_payload["scope"]
+        if not isinstance(scope_payload, list) or not all(
+            isinstance(scope, str) for scope in scope_payload
+        ):
+            raise RuntimeError("Client scope must be a list of strings.")
+
         client = session.get(ClientTable, client_payload["client_id"])
         if client is None:
             session.add(ClientTable(**client_payload))
             continue
         client.client_secret = str(client_payload["client_secret"])
-        client.grant_type = str(client_payload["grant_type"])
-        client.scope = str(client_payload["scope"])
+        client.scope = scope_payload
 
 
 def _upsert_menu_products_from_sources(

@@ -27,7 +27,7 @@ def create_test_token(grant_type: str = "client_credentials") -> str:
             "sub": "1337",
             "client_id": "1337",
             "grant_type": grant_type,
-            "scope": "catalogue",
+            "scope": ["catalogue"],
             "iat": int(now.timestamp()),
             "exp": int((now + timedelta(hours=1)).timestamp()),
         },
@@ -127,6 +127,7 @@ async def test_create_auth_token_route(client: AsyncClient) -> None:
     )
     assert claims["grant_type"] == "client_credentials"
     assert claims["client_id"] == "1337"
+    assert claims["scope"] == ["catalogue"]
 
 
 async def test_protected_routes_require_authorization(client: AsyncClient) -> None:

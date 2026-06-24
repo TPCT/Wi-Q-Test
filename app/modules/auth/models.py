@@ -4,8 +4,7 @@ from pydantic import BaseModel
 class Client(BaseModel):
     client_id: str
     client_secret: str
-    grant_type: str
-    scope: str
+    scope: list[str]
 
 
 class AccessToken(BaseModel):

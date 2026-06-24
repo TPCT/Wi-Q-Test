@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import JSON, ForeignKey, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -31,5 +31,4 @@ class ClientTable(Base):
 
     client_id: Mapped[str] = mapped_column(String, primary_key=True)
     client_secret: Mapped[str] = mapped_column(String, nullable=False)
-    grant_type: Mapped[str] = mapped_column(String, nullable=False)
-    scope: Mapped[str] = mapped_column(String, nullable=False)
+    scope: Mapped[list[str]] = mapped_column(JSON, nullable=False)
