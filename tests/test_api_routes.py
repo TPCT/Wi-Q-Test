@@ -76,7 +76,7 @@ class AuthServiceStub:
             access_token=create_test_token(grant_type=grant_type),
             expires_in=3600,
             token_type="Bearer",
-            scope="catalogue",
+            scope=["catalogue"],
         )
 
 
@@ -118,7 +118,7 @@ async def test_create_auth_token_route(client: AsyncClient) -> None:
         "access_token": response.json()["access_token"],
         "expires_in": 3600,
         "token_type": "Bearer",
-        "scope": "catalogue",
+        "scope": ["catalogue"],
     }
     claims = jwt.decode(
         response.json()["access_token"],

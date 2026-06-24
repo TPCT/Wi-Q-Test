@@ -229,7 +229,10 @@
             "title": "Token Type"
           },
           "scope": {
-            "type": "string",
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
             "title": "Scope"
           }
         },

@@ -140,7 +140,7 @@ The `responses/` files are kept in the same response shape as the task brief:
 - `POST /auth_token` validates `client_id` and `client_secret` against the `clients` table, then validates the submitted `grant_type` as the supported client-credentials flow.
 - Valid `client_credentials` requests receive a signed JWT that expires in 3600 seconds.
 - Protected endpoints decode and validate the JWT, including the `grant_type=client_credentials` claim.
-- JWT claims include scope as an array, while the token response keeps the task fixture shape with `scope` as a string.
+- JWT claims and token responses include scope as an array.
 - Products are related to their parent menu through a SQLAlchemy relationship and a `products.menu_id` foreign key.
 - The product seeder reads `seed/menu-product-sources.json` to attach `responses/menu-products.json` to the `Takeaway` menu.
 - Product services delegate product mutation to the repository; the repository owns product persistence/model construction.
@@ -178,14 +178,14 @@ Content-Type: application/x-www-form-urlencoded
 client_secret=4j3g4gj304gj3&client_id=1337&grant_type=client_credentials
 ```
 
-Validates the submitted client against the seeded `clients` table and checks that the submitted grant type is `client_credentials`, then returns a signed JWT bearer token that expires in one hour. Client scopes are stored as a JSON array and emitted as an array in JWT claims. The token response follows the field shape of `responses/token.json`, with a generated JWT replacing the sample token value.
+Validates the submitted client against the seeded `clients` table and checks that the submitted grant type is `client_credentials`, then returns a signed JWT bearer token that expires in one hour. Client scopes are stored as a JSON array and emitted as an array in both JWT claims and the token response. The token response follows the field shape of `responses/token.json`, with a generated JWT replacing the sample token value.
 
 ```json
 {
   "access_token": "jwt",
   "expires_in": 3600,
   "token_type": "Bearer",
-  "scope": "catalogue"
+  "scope": ["catalogue"]
 }
 ```
 

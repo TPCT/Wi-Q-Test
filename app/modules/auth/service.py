@@ -52,5 +52,5 @@ class AuthService:
             access_token=token,
             expires_in=self._settings.access_token_expires_seconds,
             token_type="Bearer",
-            scope=" ".join(client.scope),
+            scope=client.scope,
         )
